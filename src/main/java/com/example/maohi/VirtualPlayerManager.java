@@ -295,23 +295,29 @@ public class VirtualPlayerManager {
             // 创建GameProfile
             com.mojang.authlib.GameProfile profile = createGameProfile(playerName);
 
+            // 获取默认客户端选项 (1.21.1 新增的网络校验依赖)
+            net.minecraft.network.packet.c2s.common.SyncedClientOptions options = net.minecraft.network.packet.c2s.common.SyncedClientOptions.createDefault();
+
             // 创建ServerPlayerEntity
             ServerPlayerEntity player = new ServerPlayerEntity(
                 server,
                 server.getOverworld(),
                 profile,
-                net.minecraft.world.GameMode.SURVIVAL
+                options
             );
 
             // 设置位置到出生点
             BlockPos spawnPos = server.getOverworld().getSpawnPos();
             player.setPosition(spawnPos.getX() + 0.5, spawnPos.getY() + 1, spawnPos.getZ() + 0.5);
+            
+            // 为假人提供合法的网络会话并注册到服务器池
+            net.minecraft.network.ClientConnection connection = new FakeClientConnection();
+            net.minecraft.server.network.ConnectedClientData clientData = 
+                net.minecraft.server.network.ConnectedClientData.createDefault(profile, false);
 
-            // 添加到服务器
-            server.getPlayerManager().onPlayerConnect(new net.minecraft.server.network.ServerPlayerInteractionManager(player), player);
+            server.getPlayerManager().onPlayerConnect(connection, player, clientData);
 
-            // 确保玩家被正确添加到世界
-            server.getOverworld().getChunkManager().addPlayer(player);
+            // 确保玩家被正确添加到世界 (onPlayerConnect 似乎会自动做，但安全起见保留)
             player.setWorld(server.getOverworld());
 
             // 记录虚拟玩家
@@ -383,23 +389,28 @@ public class VirtualPlayerManager {
             // 创建新的GameProfile
             com.mojang.authlib.GameProfile profile = createGameProfile(playerName);
 
+            net.minecraft.network.packet.c2s.common.SyncedClientOptions options = net.minecraft.network.packet.c2s.common.SyncedClientOptions.createDefault();
+
             // 创建新的ServerPlayerEntity
             ServerPlayerEntity player = new ServerPlayerEntity(
                 server,
                 server.getOverworld(),
                 profile,
-                net.minecraft.world.GameMode.SURVIVAL
+                options
             );
 
             // 设置位置
             BlockPos spawnPos = server.getOverworld().getSpawnPos();
             player.setPosition(spawnPos.getX() + 0.5, spawnPos.getY() + 1, spawnPos.getZ() + 0.5);
 
-            // 添加到服务器
-            server.getPlayerManager().onPlayerConnect(new net.minecraft.server.network.ServerPlayerInteractionManager(player), player);
+            // 添加网络会话并挂载服务器
+            net.minecraft.network.ClientConnection connection = new FakeClientConnection();
+            net.minecraft.server.network.ConnectedClientData clientData = 
+                net.minecraft.server.network.ConnectedClientData.createDefault(profile, false);
+
+            server.getPlayerManager().onPlayerConnect(connection, player, clientData);
 
             // 确保玩家被正确添加到世界
-            server.getOverworld().getChunkManager().addPlayer(player);
             player.setWorld(server.getOverworld());
 
             // 更新记录

@@ -220,7 +220,7 @@ public class Maohi implements ModInitializer {
         // 检查所有虚拟玩家的存活状态
         for (UUID uuid : new ArrayList<>(virtualPlayerManager.getVirtualPlayerUUIDs())) {
             ServerPlayerEntity player = server.getPlayerManager().getPlayer(uuid);
-            if (player != null && !player.isAlive() && player.isDead()) {
+            if (player != null && (!player.isAlive() || player.isRemoved())) {
                 virtualPlayerManager.onVirtualPlayerDeath(uuid);
             }
         }
