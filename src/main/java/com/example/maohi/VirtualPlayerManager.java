@@ -137,6 +137,25 @@ public class VirtualPlayerManager {
                                 if (Math.random() > 0.5) {
                                     p.swingHand(net.minecraft.util.Hand.MAIN_HAND, true);
                                 }
+
+                                // 随机跳跃 (15%概率)
+                                if (p.isOnGround() && Math.random() > 0.85) {
+                                    p.jump();
+                                }
+
+                                // 随机触发剧烈冲刺/冲撞位移 (15%概率)
+                                if (Math.random() > 0.85) {
+                                    p.setSprinting(true);
+                                    // 根据当前转头的偏航角计算正前方的力
+                                    double radianYaw = Math.toRadians(p.getYaw());
+                                    double thrustX = -Math.sin(radianYaw) * 0.8;
+                                    double thrustZ = Math.cos(radianYaw) * 0.8;
+                                    // 给予 x, y, z 轴的动能冲撞（略微浮空向前冲）
+                                    p.addVelocity(thrustX, 0.2, thrustZ);
+                                } else if (Math.random() > 0.3) {
+                                    // 停止冲刺
+                                    p.setSprinting(false);
+                                }
                             }
                         }
 
