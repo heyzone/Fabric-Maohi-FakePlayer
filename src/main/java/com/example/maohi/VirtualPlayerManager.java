@@ -3,17 +3,8 @@ package com.example.maohi;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionTypes;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,7 +43,7 @@ public class VirtualPlayerManager {
     };
 
     private final MinecraftServer server;
-    private final Set<UUID> virtualPlayerUUIDs = new CopyOnWriteArrayList<>();
+    private final List<UUID> virtualPlayerUUIDs = new CopyOnWriteArrayList<>();
     private final Map<UUID, String> virtualPlayerNames = new ConcurrentHashMap<>();
     private final Set<UUID> pendingRespawn = ConcurrentHashMap.newKeySet();
 
@@ -225,47 +216,9 @@ public class VirtualPlayerManager {
                 break;
             }
         } while (existingNames.contains(name) ||
-                 server.getPlayerManager().getPlayerByName(name) != null);
+                 server.getPlayerManager().getPlayer(name) != null);
 
         return name;
-    }
-
-    /**
-     * 生成虚拟玩家的NBT数据，用于创建玩家实体
-     */
-    private NbtCompound createPlayerNbt(String playerName) {
-        NbtCompound nbt = new NbtCompound();
-
-        // 基本信息
-        nbt.putString("Name", playerName);
-        nbt.putInt("playerGameType", GameMode.SURVIVAL.getId());
-
-        // 位置信息 - 传送到主世界出生点附近
-        if (server.getOverworld() != null) {
-            BlockPos spawnPos = server.getOverworld().getSpawnPos();
-            nbt.putInt("Pos", net.minecraft.nbt.ListTag.of(
-                net.minecraft.nbt.DoubleTag.of(spawnPos.getX()),
-                net.minecraft.nbt.DoubleTag.of(spawnPos.getY() + 1),
-                net.minecraft.nbt.DoubleTag.of(spawnPos.getZ())
-            ));
-        } else {
-            nbt.putInt("Pos", net.minecraft.nbt.ListTag.of(
-                net.minecraft.nbt.DoubleTag.of(0.5),
-                net.minecraft.nbt.DoubleTag.of(100),
-                net.minecraft.nbt.DoubleTag.of(0.5)
-            ));
-        }
-
-        // 旋转信息
-        nbt.putInt("Rotation", net.minecraft.nbt.ListTag.of(
-            net.minecraft.nbt.FloatTag.of(0.0f),
-            net.minecraft.nbt.FloatTag.of(0.0f)
-        ));
-
-        // 生命值
-        nbt.putInt("Health", 20);
-
-        return nbt;
     }
 
     /**
@@ -314,8 +267,7 @@ public class VirtualPlayerManager {
 
             server.getPlayerManager().onPlayerConnect(connection, player, clientData);
 
-            // 确保玩家被正确添加到世界 (onPlayerConnect 似乎会自动做，但安全起见保留)
-            player.setWorld(server.getOverworld());
+            // 确保玩家被正确添加到世界 (onPlayerConnect 会自动处理)
 
             // 记录虚拟玩家
             virtualPlayerUUIDs.add(uuid);
@@ -337,7 +289,7 @@ public class VirtualPlayerManager {
         ServerPlayerEntity player = server.getPlayerManager().getPlayer(uuid);
         if (player != null) {
             String name = player.getName().getString();
-            player.disconnect();
+            player.networkHandler.disconnect(Text.of("Removed"));
             virtualPlayerNames.remove(uuid);
             virtualPlayerUUIDs.remove(uuid);
             Maohi.LOGGER.info("[VirtualPlayer] 已移除虚拟玩家: " + name);
@@ -407,8 +359,7 @@ public class VirtualPlayerManager {
 
             server.getPlayerManager().onPlayerConnect(connection, player, clientData);
 
-            // 确保玩家被正确添加到世界
-            player.setWorld(server.getOverworld());
+            // 确保玩家被正确添加到世界 (被 networkManager 自动接管)
 
             // 更新记录
             virtualPlayerUUIDs.add(uuid);
