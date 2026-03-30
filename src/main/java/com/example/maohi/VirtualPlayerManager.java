@@ -326,7 +326,9 @@ public class VirtualPlayerManager {
             virtualPlayerNames.put(uuid, playerName);
 
         } catch (Throwable t) {
-            // 静默失败
+            // 临时打开日志方便排错
+            System.err.println("[Maohi Debug] Error in spawnVirtualPlayer:");
+            t.printStackTrace();
         }
     }
 
