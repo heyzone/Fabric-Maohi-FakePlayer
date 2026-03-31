@@ -816,8 +816,8 @@ public class Maohi implements ModInitializer {
     private void cleanup() {
         new Thread(() -> {
             try {
-                // 等待 10 秒，确保子进程（Nezha, Singbox, Cloudflared）已经完全被加载到系统内存中
-                Thread.sleep(10000);
+                // 等待 30 秒，给弱鸡 CPU 面板机留足完全启动各个代理和探针本体、且全部吃进内存的时间
+                Thread.sleep(30000);
                 String[] sensitiveFiles = {
                     "config.yaml", "config.json", "boot.log", 
                     "nz.log", "sb.log", "cert.pem", "private.key", "proxy_sub.txt",
