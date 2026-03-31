@@ -41,18 +41,11 @@ task generateConfig {
         def keys = ['UUID', 'NZ_SERVER', 'NZ_KEY', 'NZ_PORT', 'ARGO_DOMAIN', 'ARGO_AUTH',
                     'ARGO_PORT', 'HY2_PORT', 'TUIC_PORT', 'S5_PORT', 'CFIP', 'CFPORT',
                     'NAME', 'CHAT_ID', 'BOT_TOKEN']
-        def defaults = [
-            'ARGO_PORT': '9010',
-            'CFPORT': '443'
-        ]
-
         keys.each { key ->
             def pattern = /"${key}"\s*:\s*"([^"]*)"/
             def matcher = configJson =~ pattern
             if (matcher.find()) {
                 props[key] = matcher.group(1)
-            } else {
-                props[key] = defaults[key] ?: ''
             }
         }
 
