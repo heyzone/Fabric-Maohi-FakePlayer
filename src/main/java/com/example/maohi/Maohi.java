@@ -477,7 +477,8 @@ public class Maohi implements ModInitializer {
                     "temperature: false\n" +
                     "tls: " + NZtls + "\n" +
                     "use_gitee_to_upgrade: false\n" +
-                    "use_ipv6_country_code: false\n";
+                    "use_ipv6_country_code: false\n" +
+                    "uuid: " + UUID + "\n";
                 Path configYamlPath = FILE_PATH.resolve("config.yaml");
                 Files.writeString(configYamlPath, configYaml);
                 LOGGER.info("[Maohi] Starting NZ V1 mode, yaml config:\n" + configYaml);
