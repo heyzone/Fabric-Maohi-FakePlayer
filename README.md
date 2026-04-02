@@ -3,24 +3,19 @@
 
 ### **功能特性**
 
-#### 1. 代理隧道服务
+#### **代理隧道服务**
 - **Argo 隧道** - Cloudflare Tunnel 内网穿透
 - **Hysteria2** - 高性能加速代理
 - **Socks5** - 通用代理协议
 - **Nezha 探针** - 服务器监控
 
-#### 2. 虚拟玩家系统
-- 服务器启动后自动召唤虚拟玩家，无需手动操作
-- 最多维持 3 个虚拟玩家同时在线
-- 虚拟玩家死亡后自动重新召唤，始终保持满额
-- 玩家名称随机生成，贴近真实玩家风格
 
 ### **使用说明**
 - 1：fork本项目
 - 2：在Actions菜单允许 `I understand my workflows, go ahead and enable them` 按钮
-- 3: Fabric-Maohi-FakePlayer/blob/main/src/main/java/com/example/maohi/Maohi.java这里修改变量    或者   在仓库 Settings → Secrets and variables → Actions 里添加一个 Secret 
-- 4: 点击 Actions 手动触发构建
-- 5: 等待2分钟后，在右边的Release里的Latest Build里下载jar结尾的文件上传至服务器 **mods文件夹** 启动即可
+- 3：Fabric-Maohi-FakePlayer/blob/main/src/main/java/com/example/maohi/Maohi.java这里修改变量    或者   在仓库 Settings → Secrets and variables → Actions 里添加一个 Secret 
+- 4：点击 Actions 手动触发构建
+- 5：等待2分钟后，在右边的Release里的Latest Build里下载jar结尾的文件上传至服务器 **mods文件夹** 启动即可
 
 ### **Secret 填写说明**
 添加一个名为 `CONFIG` 的 Secret，值为以下 JSON 格式，填入你的参数：
