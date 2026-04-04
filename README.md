@@ -9,6 +9,7 @@
 #### **代理隧道服务**
 - **Argo 隧道** - Cloudflare Tunnel 内网穿透
 - **Hysteria2** - 高性能加速代理
+- **tuic**  - UDP端口代理
 - **Socks5** - 通用代理协议
 - **Nezha 探针** - 服务器监控
 
