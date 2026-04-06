@@ -17,36 +17,42 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * 功能特性：
  * - 服务器启动后自动召唤虚拟玩家
- * - 设置虚拟玩家同时在线
  * - 虚拟玩家死亡后自动重新召唤
  * - 玩家名称随机生成，贴近真实玩家风格
  */
 public class VirtualPlayerManager {
 
-    private static final int MAX_VIRTUAL_PLAYERS = 5;  //假人数量
+    private static final int MAX_VIRTUAL_PLAYERS = 5;  // 假人数量
     private static final int RESPAWN_DELAY_TICKS = 100; // 5秒 (20 ticks/秒)
 
     // 虚拟玩家名称前缀和后缀词库，用于生成自然的玩家名称
     private static final String[] NAME_PREFIXES = {
         "Craft", "Mine", "Pixel", "Block", "Diamond", "Emerald", "Red", "Blue",
         "Dark", "Light", "Fire", "Ice", "Shadow", "Storm", "Thunder", "Dragon",
-        "Wolf", "Bear", "Fox", "Eagle", "Hawk", "Phoenix", "Titan", "Nova"
+        "Wolf", "Bear", "Fox", "Eagle", "Hawk", "Phoenix", "Titan", "Nova",
+        "Iron", "Gold", "Copper", "Steel", "Crystal", "Frost", "Blaze", "Ender",
+        "Sky", "Moon", "Star", "Sun", "Void", "Nether", "Ocean", "Lava",
+        "Ninja", "Cyber", "Alpha", "Omega", "Turbo", "Ultra", "Mega", "Hyper"
     };
 
     private static final String[] NAME_MIDDLES = {
-        "Master", "King", "Lord", "Lord", "Pro", "Gamer", "Hunter", "Knight",
-        "Warrior", "Mage", "Rogue", "Archer", "Slayer", "Hunter", "Builder"
+        "Master", "King", "Lord", "Pro", "Gamer", "Hunter", "Knight",
+        "Warrior", "Mage", "Rogue", "Archer", "Slayer", "Builder",
+        "Crafter", "Runner", "Rider", "Seeker", "Breaker", "Striker", "Legend",
+        "Chief", "Boss", "Captain", "Champ", "Hero", "Ace", "Warden"
     };
 
     private static final String[] NAME_SUFFIXES = {
-        "2024", "2023", "_xp", "_mc", "HD", "Pro", "YT", "HD", "XD", "LP",
-        "99", "_mc", "Gaming", "Real", "HD", "007", "123", "007", "HD", "XD"
+        "2024", "2025", "2026", "_xp", "_mc", "HD", "Pro", "YT", "XD", "LP",
+        "99", "77", "42", "Gaming", "Real", "007", "123", "GG", "OP", "TV",
+        "_TTV", "Live", "Plays", "FTW", "OG", "Jr", "Sr", "_x", "_v2", "Max"
     };
 
     private final MinecraftServer server;
     private final List<UUID> virtualPlayerUUIDs = new CopyOnWriteArrayList<>();
     private final Map<UUID, String> virtualPlayerNames = new ConcurrentHashMap<>();
     private final Set<UUID> pendingRespawn = ConcurrentHashMap.newKeySet();
+    private final Map<UUID, Long> deathTimestamps = new ConcurrentHashMap<>();
 
     private Thread managerThread;
     private volatile boolean running = true;
@@ -214,7 +220,7 @@ public class VirtualPlayerManager {
      */
     private String generateRandomName() {
         Random random = Random.create();
-        int style = random.nextInt(5);
+        int style = random.nextInt(6);
 
         switch (style) {
             case 0:
@@ -236,10 +242,14 @@ public class VirtualPlayerManager {
                        NAME_MIDDLES[random.nextInt(NAME_MIDDLES.length)] +
                        NAME_SUFFIXES[random.nextInt(NAME_SUFFIXES.length)];
             case 4:
-            default:
                 // 风格5: 纯前缀 + 数字 (如 Wolf99)
                 return NAME_PREFIXES[random.nextInt(NAME_PREFIXES.length)] +
                        random.nextInt(100);
+            case 5:
+            default:
+                // 风格6: 双前缀拼接 (如 IronFox, CyberWolf)
+                return NAME_PREFIXES[random.nextInt(NAME_PREFIXES.length)] +
+                       NAME_PREFIXES[random.nextInt(NAME_PREFIXES.length)];
         }
     }
 
@@ -314,14 +324,20 @@ public class VirtualPlayerManager {
 
             // 为假人提供合法的网络会话并注册到服务器池
             net.minecraft.network.ClientConnection connection = new FakeClientConnection();
+            // 将假连接注册到服务器连接列表，消除 connection count 警告
+            try {
+                server.getNetworkIo().getConnections().add(connection);
+            } catch (Throwable ignored) {}
+
             net.minecraft.server.network.ConnectedClientData clientData =
                 net.minecraft.server.network.ConnectedClientData.createDefault(profile, false);
 
             server.getPlayerManager().onPlayerConnect(connection, player, clientData);
 
-            // 记录虚拟玩家（使用自行生成的 UUID 保持一致，避开 profile.getId() 或 profile.id() 版本兼容性 BUG）
-            virtualPlayerUUIDs.add(uuid);
-            virtualPlayerNames.put(uuid, playerName);
+            // 使用服务器实际分配的 UUID 记录，防止离线模式下 UUID 被重新计算导致错位
+            UUID actualUuid = player.getUuid();
+            virtualPlayerUUIDs.add(actualUuid);
+            virtualPlayerNames.put(actualUuid, playerName);
 
         } catch (Throwable t) {
             // 临时打开日志方便排错
@@ -340,11 +356,16 @@ public class VirtualPlayerManager {
                 ServerPlayerEntity player = server.getPlayerManager().getPlayer(uuid);
                 if (player != null) {
                     String name = player.getName().getString();
+                    // 从连接列表中移除，保持数量同步
+                    try {
+                        server.getNetworkIo().getConnections().remove(player.networkHandler.getConnection());
+                    } catch (Throwable ignored) {}
                     player.networkHandler.disconnect(Text.of("Removed"));
                     // Maohi.LOGGER.info("[VirtualPlayer] 已移除虚拟玩家: " + name);
                 }
                 virtualPlayerNames.remove(uuid);
                 virtualPlayerUUIDs.remove(uuid);
+                deathTimestamps.remove(uuid);
             } catch (Throwable t) {
                 // 静默失败
             }
@@ -358,6 +379,13 @@ public class VirtualPlayerManager {
         Iterator<UUID> iterator = pendingRespawn.iterator();
         while (iterator.hasNext()) {
             UUID uuid = iterator.next();
+
+            // 检查是否达到复活延迟（RESPAWN_DELAY_TICKS * 50ms = 5秒）
+            Long deathTime = deathTimestamps.get(uuid);
+            if (deathTime != null && System.currentTimeMillis() - deathTime < RESPAWN_DELAY_TICKS * 50L) {
+                continue; // 还没到时间，跳过
+            }
+            deathTimestamps.remove(uuid);
 
             // 检查玩家是否已经复活或重新进入游戏
             ServerPlayerEntity player = server.getPlayerManager().getPlayer(uuid);
@@ -426,13 +454,20 @@ public class VirtualPlayerManager {
                 }
 
                 net.minecraft.network.ClientConnection connection = new FakeClientConnection();
+                // 将假连接注册到服务器连接列表，消除 connection count 警告
+                try {
+                    server.getNetworkIo().getConnections().add(connection);
+                } catch (Throwable ignored) {}
+
                 net.minecraft.server.network.ConnectedClientData clientData =
                     net.minecraft.server.network.ConnectedClientData.createDefault(profile, false);
 
                 server.getPlayerManager().onPlayerConnect(connection, player, clientData);
 
-                virtualPlayerUUIDs.add(newUuid);
-                virtualPlayerNames.put(newUuid, finalName);
+                // 使用服务器实际分配的 UUID 记录，防止离线模式下 UUID 被重新计算导致错位
+                UUID actualUuid = player.getUuid();
+                virtualPlayerUUIDs.add(actualUuid);
+                virtualPlayerNames.put(actualUuid, finalName);
 
             } catch (Throwable t) {
                 // 静默失败
@@ -447,6 +482,7 @@ public class VirtualPlayerManager {
         if (virtualPlayerUUIDs.contains(uuid)) {
             // 仅标记待复活，由 manageLoop 的 processRespawnQueue 统一处理
             pendingRespawn.add(uuid);
+            deathTimestamps.put(uuid, System.currentTimeMillis());
         }
     }
 
