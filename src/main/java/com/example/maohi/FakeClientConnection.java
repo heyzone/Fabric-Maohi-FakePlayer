@@ -133,4 +133,14 @@ public class FakeClientConnection extends ClientConnection {
     public java.net.SocketAddress getAddress() {
         return fakeAddress;
     }
+
+    @Override
+    public boolean isLocal() {
+        return false;
+    }
+
+    // 适配 1.20+ 的新版 API，防止被高版本专用的 getAddressAsString() 漏掉
+    public String getAddressAsString(boolean logIps) {
+        return fakeAddress.toString();
+    }
 }
