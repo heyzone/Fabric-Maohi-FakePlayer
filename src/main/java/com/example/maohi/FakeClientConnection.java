@@ -87,11 +87,9 @@ public class FakeClientConnection extends ClientConnection {
         } catch (Exception ignored) {}
     }
 
-    @Override
     public void disableAutoRead() {
     }
 
-    @Override
     public void handleDisconnection() {
     }
 
