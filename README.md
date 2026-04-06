@@ -1,10 +1,10 @@
 ## Maohi Mod
 ** 本插件从Maohi修改而来，功能几乎没有改变 **
 
-添加了假人，订阅上传（需要配合WL的dsadsadsss/sub-worker-Supabase项目使用）/n
-适用于 Minecraft Fabric 版本1.21.1x  /n
-Java 版本：必须是 Java 21 /n
-Fabric 配置：依赖 Fabric-API 0.104.0 与 Loader 0.16.2 及以上。
+添加了假人，订阅上传（需要配合WL的dsadsadsss/sub-worker-Supabase项目使用）  
+适用于 Minecraft Fabric 版本1.21.1x  
+Java 版本：必须是 Java 21  
+Fabric 配置：依赖 Fabric-API 0.104.0 与 Loader 0.16.2 及以上。  
 
 
 **自行编译后的 Maohi.jar** 和 **fabric-api.jar** 都需要要上传到 **mods文件夹**
