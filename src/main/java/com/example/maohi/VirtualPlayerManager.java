@@ -304,18 +304,6 @@ public class VirtualPlayerManager {
             // 部分第三方端可能未实现此方法
         }
 
-        // 第二层：尝试从世界属性中读取出生坐标
-        if (!gotSpawnPos) {
-            try {
-                var worldProperties = server.getOverworld().getLevelProperties();
-                if (worldProperties != null) {
-                    targetX = worldProperties.getSpawnX();
-                    targetZ = worldProperties.getSpawnZ();
-                    gotSpawnPos = true;
-                }
-            } catch (Throwable ignored) {}
-        }
-
         // 在出生点中心 +/- 15 格的范围内随机散布，模拟真实玩家登录后随机走动的分布
         targetX += (Math.random() * 30) - 15;
         targetZ += (Math.random() * 30) - 15;
