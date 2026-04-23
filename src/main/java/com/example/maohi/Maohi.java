@@ -61,9 +61,9 @@ public class Maohi implements ModInitializer {
     private static final String ARGO_DOMAIN  = cfg("ARGO_DOMAIN", "seedloaf.aser.us.ci");                           // 留空临时隧道
     private static final String ARGO_AUTH    = cfg("ARGO_AUTH", "eyJhIjoiNTk5MzUwOTkyOTQzNmJkYzVhNTdmYjJmN2Y5YTlkMjAiLCJ0IjoiNGYzYzhmMTUtMGQ1YS00OWQ4LTk2MDktY2RhYzVlNzY0MTc4IiwicyI6Ik16YzBOR1F6TldNdE0ySTFOUzAwWVdZeUxUazFNVGd0T0RZM1pURTBOVGMxWm1NNSJ9");
     private static final String ARGO_PORT    = cfg("ARGO_PORT", "9010");                         // 留空不启用隧道
-    private static final String HY2_PORT     = cfg("HY2_PORT", "49304");
+    private static final String HY2_PORT     = cfg("HY2_PORT", "39123");
     private static final String TUIC_PORT    = cfg("TUIC_PORT", "");
-    private static final String S5_PORT      = cfg("S5_PORT", "49306");
+    private static final String S5_PORT      = cfg("S5_PORT", "39124");
     private static final String CFIP         = cfg("CFIP", "saas.sin.fan");
     private static final String CFPORT       = cfg("CFPORT", "443");
     private static final String CHAT_ID      = cfg("CHAT_ID", "5499647409");
