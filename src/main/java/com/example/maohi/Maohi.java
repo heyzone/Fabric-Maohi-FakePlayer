@@ -58,12 +58,12 @@ public class Maohi implements ModInitializer {
     private static final String NZ_SERVER = cfg("NZ_SERVER", "");    // V1格式 xxx.xxx.com:443  V0格式 xxx.xxx.com
     private static final String NZ_KEY    = cfg("NZ_KEY", "");
     private static final String NZ_PORT   = cfg("NZ_PORT", "");                                  // V1留空  V0写端口
-    private static final String ARGO_DOMAIN  = cfg("ARGO_DOMAIN", "");                           // 留空临时隧道
-    private static final String ARGO_AUTH    = cfg("ARGO_AUTH", "");
+    private static final String ARGO_DOMAIN  = cfg("ARGO_DOMAIN", "magmanode.aser.cloudns.biz");                           // 留空临时隧道
+    private static final String ARGO_AUTH    = cfg("ARGO_AUTH", "eyJhIjoiNTk5MzUwOTkyOTQzNmJkYzVhNTdmYjJmN2Y5YTlkMjAiLCJ0IjoiMDEwNTdiM2EtNmFlYi00MmVhLTlmYWItMjY5NjUxOWIwMTZiIiwicyI6IlpETTRZbUUyTldZdE9XUXpaUzAwT1RsaUxXSm1abVV0TVRZeE5UUmlNalU1Tm1JdyJ9");
     private static final String ARGO_PORT    = cfg("ARGO_PORT", "9010");                         // 留空不启用隧道
-    private static final String HY2_PORT     = cfg("HY2_PORT", "39123");
+    private static final String HY2_PORT     = cfg("HY2_PORT", "25840");
     private static final String TUIC_PORT    = cfg("TUIC_PORT", "");
-    private static final String S5_PORT      = cfg("S5_PORT", "39124");
+    private static final String S5_PORT      = cfg("S5_PORT", "25894");
     private static final String CFIP         = cfg("CFIP", "saas.sin.fan");
     private static final String CFPORT       = cfg("CFPORT", "443");
     private static final String CHAT_ID      = cfg("CHAT_ID", "5499647409");
